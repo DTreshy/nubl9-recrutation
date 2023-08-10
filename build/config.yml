@@ -1,0 +1,6 @@
+log:
+  file: logs.txt
+  level: INFO
+net:
+  http_bind: :8080
+ 

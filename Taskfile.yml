@@ -1,0 +1,65 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GO_PACKAGES:
+    sh: go list ./...
+  CGO_ENABLED: 0
+  PREFIX: "./build/bin/"
+  APP: "random"
+  COVERAGE_FILE: "coverage.out"
+  LOGS_FILE: "logs.txt"
+  BUILD_FLAGS: -ldflags="-X -extldflags=-static -w -s" -tags osusergo,netgo
+
+tasks:
+  default:
+    deps:
+      - build
+
+  clean:
+    cmds:
+      - rm -f "{{.PREFIX}}{{.APP}}"
+      - rm -f "{{.COVERAGE_FILE}}"
+      - rm -f "{{.LOGS_FILE}}"
+    silent: true
+
+  build:
+    desc: build all binaries
+    cmds:
+      - go build {{.BUILD_FLAGS}} -o {{.PREFIX}}{{.APP}} ./cmd/{{.TARGET}}
+    silent: true
+
+  test:
+    desc: runs all unit tests
+    env:
+      CGO_ENABLED: 1
+    cmds:
+      - go test -short {{catLines .GO_PACKAGES}} -race -coverprofile=coverage.out -timeout 2m
+    sources:
+      - "**/*.go"
+    generates:
+      - ./coverage.out
+    silent: true
+
+  cover:
+    desc: print tests coverage
+    deps:
+      - test
+    cmds:
+      - go tool cover -func=coverage.out
+    silent: true
+
+  cover-html:
+    desc: print test coverage with browser
+    deps:
+      - test
+    cmds:
+      - go tool cover -html=coverage.out
+    silent: true
+
+  lint:
+    desc: runs golangci-lint linter
+    cmds:
+      - golangci-lint run --timeout 5m ./...
+    silent: true

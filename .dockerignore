@@ -1,0 +1,8 @@
+.gitignore
+.vscode
+.golangci.yml
+LICENCE
+logs.txt
+Taskfile.yml
+examples
+build/bin
